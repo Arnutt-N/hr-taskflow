@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+enum TaskStatus {
+  waiting
+  in_process
+  done
+}
+
+enum DocumentType {
+  PROMOTION_ORDER
+  APPOINTMENT
+  TRANSFER
+  INBOUND_TRANSFER
+  OUTBOUND_TRANSFER
+  RESIGNATION
+  POLICY
+  SPECIAL_ASSIGNMENT
+  OTHER
+}
+
+enum DocumentSource {
+  edoc
+  paper
+}
+
+model Task {
+  id               String         @id @default(cuid())
+  title            String         @db.VarChar(500)
+  detail           String?        @db.Text
+  status           TaskStatus     @default(waiting)
+  dueDate          DateTime?      @db.Date
+  remark           String?        @db.Text
+  documentNumber   String         @db.VarChar(191)
+  documentDate     DateTime?      @db.Date
+  documentType     DocumentType
+  source           DocumentSource
+  confidential     Boolean        @default(false)
+  deadlineInferred Boolean        @default(false)
+  kpiLink          String?        @db.VarChar(2048)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  @@index([documentNumber])
+  @@index([status])
+  @@index([documentType])
+  @@map("tasks")
+}
+
+model ApiToken {
+  id          String    @id @default(cuid())
+  name        String    @db.VarChar(100)
+  tokenHash   String    @unique @db.Char(64)
+  tokenPrefix String    @db.VarChar(16)
+  createdAt   DateTime  @default(now())
+  lastUsedAt  DateTime?
+  revokedAt   DateTime?
+
+  @@map("api_tokens")
+}
